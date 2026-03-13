@@ -7,7 +7,7 @@ use core::{
 
 macro_rules! array_closure_impl {
 	($array_dyn_ty:ident, $f_trait:ident, $($ref:tt)*) => {
-        pub struct $array_dyn_ty<'a, const N: usize, Args = (), Output = ()> {
+        pub struct $array_dyn_ty<'a, const N: usize = 128, Args = (), Output = ()> {
             erased: MaybeUninit<[u8; N]>,
             call: fn($($ref)* MaybeUninit<[u8; N]>, Args) -> Output,
             drop: fn(MaybeUninit<[u8; N]>),
