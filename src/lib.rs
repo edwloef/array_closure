@@ -11,7 +11,7 @@ macro_rules! array_closure_impl {
             erased: MaybeUninit<[u8; N]>,
             call: fn($($ref)* MaybeUninit<[u8; N]>, Args) -> Output,
             drop: fn(MaybeUninit<[u8; N]>),
-            _a: PhantomData<&'a (dyn $f_trait(Args) -> Output + Send + Sync + 'a)>,
+            _a: PhantomData<dyn $f_trait(Args) -> Output + Send + Sync + 'a>,
         }
         impl<'a, const N: usize, Args, Output> $array_dyn_ty<'a, N, Args, Output> {
             pub fn new<F: $f_trait(Args) -> Output + Send + Sync + 'a>(f: F) -> Self {
