@@ -9,8 +9,8 @@ macro_rules! array_closure_impl {
 	($array_dyn_ty:ident, $f_trait:ident, $($ref:tt)*) => {
         pub struct $array_dyn_ty<'a, const N: usize = { 128 - 2 * size_of::<usize>() }, Args = (), Output = ()> {
             erased: MaybeUninit<[u8; N]>,
-            call: fn($($ref)* MaybeUninit<[u8; N]>, Args) -> Output,
-            drop: fn(MaybeUninit<[u8; N]>),
+            call: unsafe fn($($ref)* MaybeUninit<[u8; N]>, Args) -> Output,
+            drop: unsafe fn(MaybeUninit<[u8; N]>),
             _a: PhantomData<dyn $f_trait(Args) -> Output + Send + Sync + 'a>,
         }
         impl<'a, const N: usize, Args, Output> $array_dyn_ty<'a, N, Args, Output> {
@@ -28,12 +28,12 @@ macro_rules! array_closure_impl {
             pub fn call($($ref)* self, args: Args) -> Output {
                 #[allow(unused_mut)]
                 let mut this = ManuallyDrop::new(self);
-                (this.call)($($ref)* this.erased, args)
+                unsafe { (this.call)($($ref)* this.erased, args) }
             }
         }
         impl<const N: usize, Args, Output> Drop for $array_dyn_ty<'_, N, Args, Output> {
             fn drop(&mut self) {
-                (self.drop)(self.erased);
+                unsafe { (self.drop)(self.erased) }
             }
         }
     };
